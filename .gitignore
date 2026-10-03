@@ -1,4 +1,22 @@
+# Secrets and injected config
 .env
+.mcp.json
+*.pem
+*.key
+credentials.json
+
+# Trinity runtime state
 .trinity/
+
+# Claude Code runtime
+.claude/projects/
+.claude/statsig/
+.claude/todos/
+.claude/debug/
+.claude/sessions/
+.claude/shell-snapshots/
+
+# Builds live outside the template (each built agent gets its own repo)
 builds/
+content/
 __pycache__/

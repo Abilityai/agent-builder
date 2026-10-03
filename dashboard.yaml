@@ -1,0 +1,12 @@
+title: Agent Builder
+refresh: 300
+sections:
+  - title: Builds
+    widgets:
+      - type: metric
+        label: Agents built
+        value: 0
+      - type: status
+        label: Last build
+        value: "none yet"
+        color: gray
