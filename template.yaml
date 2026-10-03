@@ -1,0 +1,52 @@
+# Trinity-Compatible Agent Configuration — Agent Builder
+name: agent-builder
+display_name: "Agent Builder"
+description: |
+  Creates new agents on this Trinity instance from a plain-language brief.
+  Runs the Ability.ai create-agent wizard headlessly, asks you once for anything the
+  brief leaves open, asks once for approval, then creates the agent (from a GitHub
+  repo when a token is available, otherwise as a local upload). Optionally gets a
+  design from an advisor agent first — a local agent, or a remote one over A2A.
+version: "0.1.0"
+author: "Ability.ai"
+updated: "2026-10-03"
+tagline: "Describe an agent, get it running on your instance"
+
+resources:
+  cpu: "1"
+  memory: "2g"
+
+use_cases:
+  - "Create a new agent from a one-paragraph description"
+  - "Get an agent design from an advisor agent, then build it"
+  - "Scaffold an agent for review without deploying it"
+
+capabilities:
+  - agent_creation
+  - headless_wizard
+
+# Plugins — DECLARED (trinity#1704): Trinity installs them headlessly on every boot.
+# create-agent carries the wizard; agent-dev + trinity are the standard pair.
+plugins:
+  marketplaces:
+    - name: abilityai
+      source: abilityai/abilities
+  installed:
+    - create-agent@abilityai
+    - agent-dev@abilityai
+    - trinity@abilityai
+
+# No secrets required. A GitHub token (set as this agent's GitHub PAT in Trinity) is
+# optional: with one, new agents get a private repo; without one, they are uploaded.
+credentials: {}
+
+skills:
+  - name: build-agent
+    description: "Brief in → (optional advisor design) → headless create-agent wizard → one approval ask → agent created on this instance, schedules off"
+
+schedules: []
+
+# The builder's own workspace is scratch: builds live under ~/builds and each built
+# agent gets its own repo. Nothing here is pushed back to this template.
+git:
+  push_enabled: false

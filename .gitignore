@@ -1,0 +1,4 @@
+.env
+.trinity/
+builds/
+__pycache__/
