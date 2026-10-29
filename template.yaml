@@ -99,7 +99,7 @@ schedules:
 git:
   push_enabled: false
 
-# x-blueprint — the target-view schema this agent's views are written in
-# (github:Abilityai/tandem-blueprint, ADR-0007). The platform ignores x- keys.
+# x-blueprint — the target-view schema version this agent's views are written in
+# (github:Abilityai/fleet-targets schema/, v1.1). The platform ignores x- keys.
 x-blueprint:
-  version: v0.2.0
+  version: v1.1

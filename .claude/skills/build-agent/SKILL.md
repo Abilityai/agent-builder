@@ -22,7 +22,7 @@ $ARGUMENTS
 
 - **brief** — everything except the flags.
 - `--from <advisor>` — where to get a design: `agent:<name>` (an agent on this instance, called with `chat_with_agent`) or `<endpoint>` (a registered outbound A2A endpoint, called with `call_a2a_agent`). Omitted → `${ARCHITECT_ADVISOR}` when set (the hosted Architect, see `/subscribe`); otherwise no advisor.
-- `--fleet` — the brief describes a whole fleet, not one agent. Requires an advisor: send `/design-fleet <brief>` the same way as Step 1, accept only a reply whose first YAML block validates against `tandem-blueprint/schema/target-view.yaml`, store it unedited as `views/<fleet>/target-view.yaml` (fleet = the view's `fleet:` key), print the path, and stop: building the fleet is the library `/compile-view` → `/apply-view` → `/reconcile-fleet` path, each gated where the view says. Without an advisor, say so and stop — the wizard designs agents, not fleets.
+- `--fleet` — the brief describes a whole fleet, not one agent. Requires an advisor: send `/design-fleet <brief>` the same way as Step 1, accept only a reply whose first YAML block validates against `fleet-targets/schema/target-view.yaml`, store it unedited as `views/<fleet>/target-view.yaml` (fleet = the view's `fleet:` key), print the path, and stop: building the fleet is the library `/compile-view` → `/apply-view` → `/reconcile-fleet` path, each gated where the view says. Without an advisor, say so and stop — the wizard designs agents, not fleets.
 - `--no-deploy` — scaffold and stop before the creation step.
 
 ## Step 0: Resume or start
