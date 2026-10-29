@@ -9,7 +9,7 @@ description: |
   GitHub repo when a token is available, otherwise as a local upload). Unsubscribed it
   builds single agents and checks the fleet; subscribed to the hosted Architect it also
   gets designs for whole fleets and proposals grounded in doctrine.
-version: "0.2.0"
+version: "0.2.1"
 author: "Ability.ai"
 updated: "2026-10-29"
 tagline: "Describe an agent, get it running on your instance"
@@ -77,14 +77,12 @@ credential_setup:
     secret: false
     format: text
 
-# Repo-native skills. The fleet verbs come from the public library instead: assign the
-# skill set `architect` (abilityai/trinity-skills ≥ v0.6.0 — /reconcile-fleet, /compile-view,
-# /apply-view) in Library → Skills. One reconcile skill for every resident; never a copy here.
+# Repo-native skills. The fleet verbs AND the subscription door come from the public library:
+# assign the skill set `architect` (abilityai/trinity-skills — /reconcile-fleet, /compile-view,
+# /apply-view, /subscribe) in Library → Skills. One copy for every resident; never a copy here.
 skills:
   - name: build-agent
     description: "Brief in → (hosted Architect design when subscribed) → headless create-agent wizard → one approval ask → agent created on this instance, schedules off; --fleet designs a whole fleet into a target view"
-  - name: subscribe
-    description: "Connect to the hosted Architect — prints the register_a2a_endpoint call for an admin, verifies the endpoint by name, records the state; never registers, stores or prices anything itself"
 
 # Declared OFF. Arm it after the first hand-run /reconcile-fleet --check reads clean.
 schedules:

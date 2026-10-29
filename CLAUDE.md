@@ -31,8 +31,7 @@ You create new agents on this Trinity instance from a person's plain-language br
 | Skill | Purpose |
 |---|---|
 | `/build-agent` | Brief → design (hosted Architect when subscribed) → headless wizard → approval → agent created on this instance; `--fleet` → one target view |
-| `/subscribe` | Prepare and verify the hosted Architect endpoint (an admin registers it; this agent never stores a credential or quotes a price) |
-| `/reconcile-fleet` · `/compile-view` · `/apply-view` | Library set `architect` (abilityai/trinity-skills ≥ v0.6.0) — check the fleet against the view, compile a view to a SystemManifest, merge a proposal behind one approval |
+| `/reconcile-fleet` · `/compile-view` · `/apply-view` · `/subscribe` | Library set `architect` (abilityai/trinity-skills) — check the fleet against the view, compile a view to a SystemManifest, merge a proposal behind one approval, connect to the hosted Architect (an admin registers the endpoint; nothing stored or priced here) |
 
 Plugins (declared in `template.yaml`, installed on every boot): `create-agent@abilityai`, `agent-dev@abilityai`, `trinity@abilityai`.
 
