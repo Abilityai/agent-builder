@@ -1,26 +1,28 @@
 ---
 name: build-agent
-description: Build a new agent on this Trinity instance from a brief — optionally get one design from an advisor agent first (local agent or remote A2A endpoint), then run the create-agent wizard headlessly, one gaps ask + one approval ask, and create the agent with all schedules off
-argument-hint: <brief> [--from <advisor>] [--no-deploy]
-allowed-tools: [Bash, Read, Write, Skill]
+description: Build a new agent on this Trinity instance from a brief — a design from the hosted Architect first when subscribed (ARCHITECT_ADVISOR, or --from), then the create-agent wizard headlessly, one gaps ask + one approval ask, the agent created with all schedules off; --fleet designs a whole fleet into one target view instead
+argument-hint: <brief> [--from <advisor>] [--no-deploy] [--fleet]
+allowed-tools: [Bash, Read, Write, Skill, mcp__trinity__call_a2a_agent, mcp__trinity__get_a2a_task, mcp__trinity__chat_with_agent, mcp__trinity__get_execution_result, mcp__trinity__ask_operator, mcp__trinity__get_my_ask]
 user-invocable: true
 automation: autonomous
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   changelog:
+    - "0.2.0: the resident half of the Architect (trinity-enterprise#996, 2026-10-29): --from defaults to the hosted Architect endpoint named by ARCHITECT_ADVISOR when set; --fleet sends the brief to /design-fleet and stores the one target view it answers with (views/<fleet>/target-view.yaml), handing over to the library /compile-view; absorbs the retired Abilityai/architect template"
     - "0.1.0: first version — advisor via local agent or A2A endpoint (/design-agent → agent-spec/v1), spec passed to /create-agent:custom unedited, wizard-only fallback, resumable across the wizard's two asks"
 ---
 
 # Build Agent
 
-> ℹ️ `build-agent v0.1.0` — first version: brief → optional advisor design → headless wizard → approval → created, schedules off.
+> ℹ️ `build-agent v0.2.0` — the hosted Architect is the default advisor when `ARCHITECT_ADVISOR` is set; `--fleet` designs a whole fleet into a target view. Unsubscribed: wizard alone, as before.
 
 ## Arguments
 
 $ARGUMENTS
 
 - **brief** — everything except the flags.
-- `--from <advisor>` — where to get a design: `agent:<name>` (an agent on this instance, called with `chat_with_agent`) or `<endpoint>` (a registered outbound A2A endpoint, called with `call_a2a_agent`). Omitted → no advisor.
+- `--from <advisor>` — where to get a design: `agent:<name>` (an agent on this instance, called with `chat_with_agent`) or `<endpoint>` (a registered outbound A2A endpoint, called with `call_a2a_agent`). Omitted → `${ARCHITECT_ADVISOR}` when set (the hosted Architect, see `/subscribe`); otherwise no advisor.
+- `--fleet` — the brief describes a whole fleet, not one agent. Requires an advisor: send `/design-fleet <brief>` the same way as Step 1, accept only a reply whose first YAML block validates against `tandem-blueprint/schema/target-view.yaml`, store it unedited as `views/<fleet>/target-view.yaml` (fleet = the view's `fleet:` key), print the path, and stop: building the fleet is the library `/compile-view` → `/apply-view` → `/reconcile-fleet` path, each gated where the view says. Without an advisor, say so and stop — the wizard designs agents, not fleets.
 - `--no-deploy` — scaffold and stop before the creation step.
 
 ## Step 0: Resume or start

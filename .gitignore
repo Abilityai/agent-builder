@@ -20,3 +20,6 @@ credentials.json
 builds/
 content/
 __pycache__/
+
+# subscription + build state
+state/

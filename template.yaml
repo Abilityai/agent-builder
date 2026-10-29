@@ -2,14 +2,16 @@
 name: agent-builder
 display_name: "Agent Builder"
 description: |
-  Creates new agents on this Trinity instance from a plain-language brief.
-  Runs the Ability.ai create-agent wizard headlessly, asks you once for anything the
-  brief leaves open, asks once for approval, then creates the agent (from a GitHub
-  repo when a token is available, otherwise as a local upload). Optionally gets a
-  design from an advisor agent first — a local agent, or a remote one over A2A.
-version: "0.1.0"
+  Creates new agents on this Trinity instance from a plain-language brief, and — with the
+  `architect` library skill set assigned — keeps your fleet honest against a target view
+  people wrote. Runs the Ability.ai create-agent wizard headlessly, asks you once for
+  anything the brief leaves open, asks once for approval, then creates the agent (from a
+  GitHub repo when a token is available, otherwise as a local upload). Unsubscribed it
+  builds single agents and checks the fleet; subscribed to the hosted Architect it also
+  gets designs for whole fleets and proposals grounded in doctrine.
+version: "0.2.0"
 author: "Ability.ai"
-updated: "2026-10-03"
+updated: "2026-10-29"
 tagline: "Describe an agent, get it running on your instance"
 
 resources:
@@ -18,12 +20,14 @@ resources:
 
 use_cases:
   - "Create a new agent from a one-paragraph description"
-  - "Get an agent design from an advisor agent, then build it"
+  - "Design a whole fleet from a brief with the hosted Architect, then build it"
+  - "Check the live fleet against its target view — what drifted, what is unobserved"
   - "Scaffold an agent for review without deploying it"
 
 capabilities:
   - agent_creation
   - headless_wizard
+  - fleet_reconciliation
 
 # Plugins — DECLARED (trinity#1704): Trinity installs them headlessly on every boot.
 # create-agent carries the wizard; agent-dev + trinity are the standard pair.
@@ -36,17 +40,66 @@ plugins:
     - agent-dev@abilityai
     - trinity@abilityai
 
-# No secrets required. A GitHub token (set as this agent's GitHub PAT in Trinity) is
-# optional: with one, new agents get a private repo; without one, they are uploaded.
-credentials: {}
+# Everything is optional. With nothing set the builder still creates agents wizard-only
+# (uploaded, no reproducible source) and explains what each missing value would unlock.
+# Names only — never values.
+credentials:
+  env_file:
+    - GITHUB_TOKEN
+    - ARCHITECT_ADVISOR
+    - ARCHITECT_FLEET
+    - ARCHITECT_VIEW_SOURCE
 
+credential_setup:
+  - name: GITHUB_TOKEN
+    title: GitHub token (optional)
+    description: "Fine-grained PAT. With one, every new agent gets its own private repo; without one it is uploaded and the builder says it has no reproducible source. Contents READ on the view repository when ARCHITECT_VIEW_SOURCE is git: — read-only by design, this agent must not be able to push there."
+    required: false
+    secret: true
+    format: secret
+    setup_url: https://github.com/settings/personal-access-tokens/new
+  - name: ARCHITECT_ADVISOR
+    title: Hosted Architect endpoint name (optional)
+    description: "The NAME of the outbound A2A endpoint an admin registered for the hosted Architect (/subscribe prints the exact call; register_a2a_endpoint is admin and human-only). Empty = unsubscribed: /build-agent uses the wizard alone, no fleet designs, no proposals from doctrine; everything else works. Pricing lives on the paid door, never here."
+    required: false
+    secret: false
+    format: text
+  - name: ARCHITECT_FLEET
+    title: Fleet slug (optional)
+    description: "The fleet this agent checks — the <fleet> in views/<fleet>/target-view.yaml or <repo>/<fleet>/target-view.yaml. Unset is tolerated only while exactly one view exists."
+    required: false
+    secret: false
+    format: text
+  - name: ARCHITECT_VIEW_SOURCE
+    title: Where the target view lives (optional)
+    description: "`git:github:<org>/<repo>` — a repository whose <fleet>/target-view.yaml people merge and this agent can only read (needs GITHUB_TOKEN); or `local:views/<fleet>/target-view.yaml` — a Trinity-held view written only by the gated /apply-view. Default: local."
+    required: false
+    secret: false
+    format: text
+
+# Repo-native skills. The fleet verbs come from the public library instead: assign the
+# skill set `architect` (abilityai/trinity-skills ≥ v0.6.0 — /reconcile-fleet, /compile-view,
+# /apply-view) in Library → Skills. One reconcile skill for every resident; never a copy here.
 skills:
   - name: build-agent
-    description: "Brief in → (optional advisor design) → headless create-agent wizard → one approval ask → agent created on this instance, schedules off"
+    description: "Brief in → (hosted Architect design when subscribed) → headless create-agent wizard → one approval ask → agent created on this instance, schedules off; --fleet designs a whole fleet into a target view"
+  - name: subscribe
+    description: "Connect to the hosted Architect — prints the register_a2a_endpoint call for an admin, verifies the endpoint by name, records the state; never registers, stores or prices anything itself"
 
-schedules: []
+# Declared OFF. Arm it after the first hand-run /reconcile-fleet --check reads clean.
+schedules:
+  - id: fleet-check
+    name: "Fleet check — weekly, read-only"
+    cron: "0 6 * * 1"
+    message: "/reconcile-fleet --check"
+    enabled: false
 
 # The builder's own workspace is scratch: builds live under ~/builds and each built
 # agent gets its own repo. Nothing here is pushed back to this template.
 git:
   push_enabled: false
+
+# x-blueprint — the target-view schema this agent's views are written in
+# (github:Abilityai/tandem-blueprint, ADR-0007). The platform ignores x- keys.
+x-blueprint:
+  version: v0.2.0
